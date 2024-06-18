@@ -22,11 +22,16 @@ public class TicTacToe {
 
         printBoard();
 
+        char currentPlayer = O; // Computer starts with O after user's move
+
         while (!isBoardFull() && evaluate(board) == 0) {
             System.out.println("Computer's move:");
-            Move bestMove = findBestMove();
-            board[bestMove.row][bestMove.col] = O;
+            Move bestMove = findBestMove(currentPlayer);
+            board[bestMove.row][bestMove.col] = currentPlayer;
             printBoard();
+
+            // Alternate the player
+            currentPlayer = (currentPlayer == X) ? O : X;
         }
 
         int score = evaluate(board);
@@ -91,7 +96,7 @@ public class TicTacToe {
         return 0;
     }
 
-    static int minimax(char[][] b, int depth, boolean isMax) {
+    static int minimax(char[][] b, int depth, boolean isMax, char player, char opponent) {
         int score = evaluate(b);
 
         if (score == 10) return score - depth;
@@ -104,8 +109,8 @@ public class TicTacToe {
             for (int i = 0; i < SIZE; i++) {
                 for (int j = 0; j < SIZE; j++) {
                     if (b[i][j] == EMPTY) {
-                        b[i][j] = O;
-                        best = Math.max(best, minimax(b, depth + 1, false));
+                        b[i][j] = player;
+                        best = Math.max(best, minimax(b, depth + 1, false, player, opponent));
                         b[i][j] = EMPTY;
                     }
                 }
@@ -117,8 +122,8 @@ public class TicTacToe {
             for (int i = 0; i < SIZE; i++) {
                 for (int j = 0; j < SIZE; j++) {
                     if (b[i][j] == EMPTY) {
-                        b[i][j] = X;
-                        best = Math.min(best, minimax(b, depth + 1, true));
+                        b[i][j] = opponent;
+                        best = Math.min(best, minimax(b, depth + 1, true, player, opponent));
                         b[i][j] = EMPTY;
                     }
                 }
@@ -135,18 +140,23 @@ public class TicTacToe {
         }
     }
 
-    static Move findBestMove() {
-        int bestVal = Integer.MIN_VALUE;
+    static Move findBestMove(char currentPlayer) {
+        int bestVal = (currentPlayer == O) ? Integer.MIN_VALUE : Integer.MAX_VALUE;
         Move bestMove = new Move(-1, -1);
 
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 if (board[i][j] == EMPTY) {
-                    board[i][j] = O;
-                    int moveVal = minimax(board, 0, false);
+                    board[i][j] = currentPlayer;
+                    int moveVal;
+                    if (currentPlayer == O) {
+                        moveVal = minimax(board, 0, false, O, X);
+                    } else {
+                        moveVal = minimax(board, 0, true, X, O);
+                    }
                     board[i][j] = EMPTY;
 
-                    if (moveVal > bestVal) {
+                    if ((currentPlayer == O && moveVal > bestVal) || (currentPlayer == X && moveVal < bestVal)) {
                         bestMove.row = i;
                         bestMove.col = j;
                         bestVal = moveVal;
