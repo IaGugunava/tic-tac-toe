@@ -1,6 +1,7 @@
 import java.util.Scanner;
 
 public class TicTacToe {
+
     static final int SIZE = 3;
     static final char EMPTY = ' ';
     static final char X = 'X';
